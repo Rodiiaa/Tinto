@@ -18,7 +18,7 @@ class HabitHelperApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tintio',
+      title: 'Tinto',
       theme: ThemeData(
         scaffoldBackgroundColor: background,
         useMaterial3: true,
@@ -56,10 +56,10 @@ DateTime selectedDate = DateTime.now();
   ];
 
   final List<Habit> flexibleHabits = [
-    Habit('Basen', Icons.pool, [0, 1, 3], progress: '2/3'),
-    Habit('Czytanie książek', Icons.auto_stories, [0, 2, 3, 4],
-        progress: '4/5'),
-  ];
+  Habit('Basen', Icons.pool, [0, 1, 3], progress: '0/5'),
+  Habit('Czytanie książek', Icons.auto_stories, [0, 2, 3, 4],
+      progress: '0/5'),
+];
 
   final List<String> weekdays = [
     'Pn', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Nd'
@@ -152,10 +152,10 @@ DateTime selectedDate = DateTime.now();
               const Icon(Icons.insights, color: navy, size: 28),
               const SizedBox(width: 8),
               const Text(
-                'HabitHelper',
+                'Tinto',
                 style: TextStyle(
                   color: ink,
-                  fontSize: 18,
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -191,10 +191,29 @@ DateTime selectedDate = DateTime.now();
   }
 
   Widget navItem(IconData icon, String label, bool active) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
+  return InkWell(
+    borderRadius: BorderRadius.circular(9),
+    onTap: () {
+      if (label == 'Strona główna') {
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EmptyPage(title: label),
+        ),
+      );
+    },
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 9,
+        vertical: 8,
+      ),
       decoration: BoxDecoration(
-        color: active ? const Color(0xFFDAD9EA) : Colors.transparent,
+        color: active
+            ? const Color(0xFFDAD9EA)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(9),
       ),
       child: Row(
@@ -204,12 +223,16 @@ DateTime selectedDate = DateTime.now();
           const SizedBox(width: 5),
           Text(
             label,
-            style: const TextStyle(fontSize: 11, color: ink),
+            style: const TextStyle(
+              fontSize: 18,
+              color: ink,
+            ),
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget buildCalendar() {
     final firstDay = DateTime(month.year, month.month, 1);
@@ -244,7 +267,7 @@ DateTime selectedDate = DateTime.now();
                   child: Text(
                     '${monthNames[month.month - 1]} ${month.year}',
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 25,
                       fontWeight: FontWeight.bold,
                       color: ink,
                     ),
@@ -262,7 +285,7 @@ DateTime selectedDate = DateTime.now();
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Text(
                       day,
-                      style: const TextStyle(fontSize: 10, color: ink),
+                      style: const TextStyle(fontSize: 20, color: ink),
                     ),
                   ),
                 ),
@@ -328,7 +351,7 @@ final isSelected = date.year == selectedDate.year &&
                       Text(
                         '${date.day}',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 15,
                           color: inMonth ? ink : Colors.grey,
                           fontWeight: isSelected || isToday
                               ? FontWeight.bold
@@ -387,11 +410,10 @@ final isSelected = date.year == selectedDate.year &&
       [Icons.favorite, 'Ból serca'],
       [Icons.bolt, 'Dużo energii'],
       [Icons.card_giftcard, 'Party'],
-      [Icons.favorite_border, 'Seks'],
     ];
 
     return Container(
-      constraints: const BoxConstraints(minHeight: 220),
+      constraints: const BoxConstraints(minHeight: 300),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFFFFEF8),
@@ -405,9 +427,9 @@ final isSelected = date.year == selectedDate.year &&
             'Legenda',
             style: TextStyle(
               color: ink,
-              fontSize: 15,
+              fontSize: 25,
               fontWeight: FontWeight.bold,
-            ),
+            ), // legenda stuff is up from here
           ),
           const SizedBox(height: 16),
           ...entries.map((entry) {
@@ -426,7 +448,7 @@ final isSelected = date.year == selectedDate.year &&
                   Expanded(
                     child: Text(
                       label,
-                      style: const TextStyle(fontSize: 11, color: ink),
+                      style: const TextStyle(fontSize: 20, color: ink),
                     ),
                   ),
                 ],
@@ -445,7 +467,7 @@ final isSelected = date.year == selectedDate.year &&
         Text(
           title,
           style: const TextStyle(
-            fontSize: 19,
+            fontSize: 25,
             fontWeight: FontWeight.bold,
             color: Colors.black,
           ),
@@ -520,20 +542,20 @@ class _HabitCardState extends State<HabitCard> {
                 child: Text(
                   widget.habit.name,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: ink,
                   ),
                 ),
               ),
               if (widget.habit.progress != null)
-                Text(
-                  widget.habit.progress!,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: ink,
-                  ),
-                ),
+  Text(
+    '${selected.take(7).where((day) => day).length}/5',
+    style: const TextStyle(
+      fontWeight: FontWeight.bold,
+      color: ink,
+    ),
+  ),
             ],
           ),
           const SizedBox(height: 10),
@@ -543,6 +565,8 @@ class _HabitCardState extends State<HabitCard> {
               return Row(
                 children: List.generate(7, (index) {
                   final active = selected[index];
+final todayIndex = DateTime.now().weekday - 1;
+final isToday = index == todayIndex;
 
                   return Expanded(
                     child: Padding(
@@ -559,20 +583,20 @@ class _HabitCardState extends State<HabitCard> {
                           },
                           style: OutlinedButton.styleFrom(
                             padding: EdgeInsets.zero,
-                            backgroundColor: active
-                                ? (index == 3
-                                    ? const Color(0xFFB8B8B8)
-                                    : navy)
-                                : Colors.transparent,
+                           backgroundColor: active
+    ? navy
+    : isToday
+        ? const Color(0xFFB8B8B8)
+        : Colors.transparent,
                             foregroundColor:
                                 active ? Colors.white : Colors.black54,
                             side: BorderSide(
-                              color: index == 3
-                                  ? purple
-                                  : active
-                                      ? navy
-                                      : const Color(0xFF9999A5),
-                              width: index == 3 ? 1.7 : 1,
+                              color: isToday
+    ? const Color(0xFF888888)
+    : active
+        ? navy
+        : const Color(0xFF9999A5),
+                            
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6),
@@ -582,7 +606,7 @@ class _HabitCardState extends State<HabitCard> {
                             fit: BoxFit.scaleDown,
                             child: Text(
                               widget.weekdays[index],
-                              style: const TextStyle(fontSize: 11),
+                              style: const TextStyle(fontSize: 15),
                             ),
                           ),
                         ),
@@ -595,6 +619,38 @@ class _HabitCardState extends State<HabitCard> {
           ),
         ],
       ),
+    );
+  }
+}
+// empty page thing below
+class EmptyPage extends StatelessWidget {
+  final String title;
+
+  const EmptyPage({
+    super.key,
+    required this.title,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: background,
+      appBar: AppBar(
+        backgroundColor: background,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: navy),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: ink,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: const SizedBox.expand(),
     );
   }
 }
