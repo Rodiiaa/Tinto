@@ -1,5 +1,7 @@
-
 import 'package:flutter/material.dart';
+import 'habits_page';
+import 'statistics_page';
+import 'account_page';
 
 void main() {
   runApp(const HabitHelperApp());
@@ -7,26 +9,30 @@ void main() {
 
 const navy = Color(0xFF263D8C);
 const purple = Color(0xFF6256FF);
-const lavender = Color(0xFFDCDFFF);
+const lavender = Color.fromARGB(255, 2, 3, 12);
 const background = Color(0xFFF0EFE9);
 const ink = Color(0xFF26345F);
-
 class HabitHelperApp extends StatelessWidget {
   const HabitHelperApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Tinto',
-      theme: ThemeData(
-        scaffoldBackgroundColor: background,
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: navy),
-        fontFamily: 'Arial',
-      ),
-      home: const HabitDashboard(),
-    );
+  debugShowCheckedModeBanner: false,
+  title: 'Tinto',
+  theme: ThemeData(
+    scaffoldBackgroundColor: background,
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(seedColor: navy),
+    fontFamily: 'Arial',
+  ),
+  home: const HabitDashboard(),
+  routes: {
+    '/habits': (context) =>  HabitsPage(),
+    '/statistics': (context) => StatisticsPage(),
+    '/account': (context) =>  AccountPage(),
+  },
+);
   }
 }
 
@@ -89,10 +95,11 @@ DateTime selectedDate = DateTime.now();
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(flex: 7, child: buildCalendar()),
-                        const SizedBox(width: 12),
+                        Expanded(flex: 5, child: buildCalendar()),
+                        const SizedBox(width: 10),
                         Expanded(flex: 3, child: buildLegend()),
                       ],
+                      // FEDYA change cand heigh and with here
                     )
                   else ...[
                     buildCalendar(),
@@ -133,78 +140,124 @@ DateTime selectedDate = DateTime.now();
     );
   }
 
-  Widget buildNavigation() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Wrap(
-        alignment: WrapAlignment.spaceBetween,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 12,
-        runSpacing: 12,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.insights, color: navy, size: 28),
-              const SizedBox(width: 8),
-              const Text(
-                'Tinto',
-                style: TextStyle(
-                  color: ink,
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
+ 
+Widget buildNavigation() {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    decoration: BoxDecoration(
+      color: background,
+      borderRadius: BorderRadius.circular(18),
+    ),
+    child: Row(
+      children: [
+        // LEFT: Tinto logo
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.insights, color: navy, size: 28),
+            const SizedBox(width: 8),
+            const Text(
+              'Tinto',
+              style: TextStyle(
+                color: ink,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
               ),
-            ],
-          ),
-          Wrap(
-            spacing: 4,
-            runSpacing: 4,
-            children: [
-              navItem(Icons.home_outlined, 'Strona główna', true),
-              navItem(Icons.track_changes, 'Nawyki', false),
-              navItem(Icons.bar_chart, 'Statystyki', false),
-              navItem(Icons.calendar_month, 'Kalendarz', false),
-            ],
-          ),
-          const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.search, color: Colors.grey),
-              SizedBox(width: 12),
-              Icon(Icons.notifications_none, color: Colors.grey),
-              SizedBox(width: 12),
-              CircleAvatar(
+            ),
+          ],
+        ),
+
+        const SizedBox(width: 60),
+
+        // MIDDLE-LEFT: Page buttons
+        Wrap(
+          spacing: 4,
+          runSpacing: 4,
+          children: [
+            navItem(Icons.home_outlined, 'Strona główna', true),
+            navItem(Icons.track_changes, 'Nawyki', false),
+            navItem(Icons.bar_chart, 'Statystyki', false),
+            navItem(Icons.account_box, 'Twoje konto', false),
+          ],
+        ),
+
+        const Spacer(),
+
+        // FAR RIGHT: Search, notifications and profile
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.search, color: Colors.grey),
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.notifications_none, color: Colors.grey),
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: const CircleAvatar(
                 radius: 15,
                 backgroundColor: navy,
-                child: Icon(Icons.person, size: 19, color: Colors.white),
+                child: Icon(
+                  Icons.person,
+                  size: 19,
+                  color: Colors.white,
+                ),
               ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget navItem(IconData icon, String label, bool active) {
   return InkWell(
     borderRadius: BorderRadius.circular(9),
     onTap: () {
-      if (label == 'Strona główna') {
-        return;
-      }
+  String? route;
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => EmptyPage(title: label),
-        ),
-      );
-    },
+  switch (label) {
+    case 'Nawyki':
+      route = '/habits';
+      break;
+    case 'Statystyki':
+      route = '/statistics';
+      break;
+    case 'Twoje konto':
+      route = '/account';
+      break;
+    case 'Strona główna':
+      return;
+  }
+
+  if (route != null) {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          switch (route) {
+            case '/habits':
+              return HabitsPage();
+            case '/statistics':
+              return StatisticsPage();
+            case '/account':
+              return AccountPage();
+            default:
+              return const HabitDashboard();
+          }
+        },
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+  }
+},
     child: Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 9,
@@ -331,10 +384,11 @@ final isSelected = date.year == selectedDate.year &&
                 child: Container(
                   decoration: BoxDecoration(
   color: isSelected
-      ? lavender
+      ? const Color(0xFFB8B9FA)
       : isToday
           ? const Color(0xFFE8E9FF)
           : Colors.transparent,
+          
   border: Border.all(
     color: isSelected
         ? purple
@@ -342,7 +396,7 @@ final isSelected = date.year == selectedDate.year &&
             ? navy
             : const Color(0xFFB8B9FA),
     width: isSelected ? 2 : isToday ? 1.5 : 0.65,
-  ), //selected day decor is up
+  ), // FEDYA selected day decor is up
 ),
                   padding: const EdgeInsets.all(4),
                   child: Column(

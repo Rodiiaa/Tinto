@@ -1,0 +1,146 @@
+
+import 'package:flutter/material.dart';
+import 'main.dart';
+import 'statistics_page';
+import 'account_page';
+
+const pageNavy = Color(0xFF263D8C);
+const pageInk = Color(0xFF26345F);
+const pageBackground = Color(0xFFF0EFE9);
+
+class HabitsPage extends StatelessWidget {
+  const HabitsPage({super.key});
+
+  Widget navItem(BuildContext context, IconData icon, String label,
+    String route, String activePage) {
+  final active = label == activePage;
+
+  return InkWell(
+    borderRadius: BorderRadius.circular(9),
+    onTap: () {
+      if (!active) {
+        Widget page;
+
+        switch (route) {
+          case '/':
+            page = const HabitDashboard();
+            break;
+          case '/habits':
+            page = const HabitsPage();
+            break;
+          case '/statistics':
+            page = StatisticsPage();
+            break;
+          case '/account':
+            page = AccountPage();
+            break;
+          default:
+            return;
+        }
+
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => page,
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+      }
+    },
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
+      decoration: BoxDecoration(
+        color: active ? const Color(0xFFDAD9EA) : Colors.transparent,
+        borderRadius: BorderRadius.circular(9),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: pageInk),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 18, color: pageInk),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+  Widget buildNavigation(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: pageBackground,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.insights, color: pageNavy, size: 28),
+              const SizedBox(width: 8),
+              const Text('Tinto',
+                  style: TextStyle(
+                    color: pageInk,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  )),
+            ],
+          ),
+          const SizedBox(width: 60),
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: [
+              navItem(context, Icons.home_outlined, 'Strona główna', '/', 'Nawyki'),
+              navItem(context, Icons.track_changes, 'Nawyki', '/habits', 'Nawyki'),
+              navItem(context, Icons.bar_chart, 'Statystyki', '/statistics', 'Nawyki'),
+              navItem(context, Icons.account_box, 'Twoje konto', '/account', 'Nawyki'),
+            ],
+          ),
+          const Spacer(),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(onPressed: () {}, icon: const Icon(Icons.search, color: Colors.grey)),
+              IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none, color: Colors.grey)),
+              IconButton(
+                onPressed: () {},
+                icon: const CircleAvatar(
+                  radius: 15,
+                  backgroundColor: pageNavy,
+                  child: Icon(Icons.person, size: 19, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: pageBackground,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildNavigation(context),
+              const SizedBox(height: 20),
+              const Center(child: Text('Tutaj będą Twoje nawyki')),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
