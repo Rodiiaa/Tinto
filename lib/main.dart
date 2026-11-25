@@ -47,6 +47,52 @@ class _HabitDashboardState extends State<HabitDashboard> {
   DateTime month = DateTime.now();
 DateTime selectedDate = DateTime.now();
 
+// Stores habit checkmarks separately for each week.
+final Map<String, Map<String, List<bool>>> weeklyHabitChecks = {};
+
+// Finds the Monday of the week containing a date.
+DateTime startOfWeek(DateTime date) {
+  return DateTime(date.year, date.month, date.day)
+      .subtract(Duration(days: date.weekday - 1));
+}
+
+// Creates a unique key for each week.
+String weekKey(DateTime date) {
+  final monday = startOfWeek(date);
+  return '${monday.year}-${monday.month}-${monday.day}';
+}
+
+// Gets the checkmarks for a habit in the selected week.
+List<bool> getHabitChecks(Habit habit) {
+  final key = weekKey(selectedDate);
+
+  return weeklyHabitChecks[key]?[habit.name] ??
+      List.generate(
+        7,
+        (index) => habit.activeDays.contains(index),
+      );
+}
+
+// Saves a changed checkmark for the selected week.
+void toggleHabitDay(Habit habit, int index) {
+  setState(() {
+    final key = weekKey(selectedDate);
+
+    weeklyHabitChecks.putIfAbsent(key, () => {});
+
+    final checks = weeklyHabitChecks[key]!.putIfAbsent(
+      habit.name,
+      () => List.generate(
+        7,
+        (i) => habit.activeDays.contains(i),
+      ),
+    );
+
+    checks[index] = !checks[index];
+  });
+}
+
+
   final Map<int, List<IconData>> calendarHabits = {
   };
 
@@ -375,6 +421,15 @@ final isSelected = date.year == selectedDate.year &&
     date.month == selectedDate.month &&
     date.day == selectedDate.day;
 
+    final selectedWeekStart = startOfWeek(selectedDate);
+final selectedWeekEnd = selectedWeekStart.add(
+  const Duration(days: 6),
+);
+
+final isInSelectedWeek =
+    !date.isBefore(selectedWeekStart) &&
+    !date.isAfter(selectedWeekEnd);
+
               final icons = inMonth
                   ? (calendarHabits[dayNumber] ?? <IconData>[])
                   : <IconData>[];
@@ -384,19 +439,23 @@ final isSelected = date.year == selectedDate.year &&
                 child: Container(
                   decoration: BoxDecoration(
   color: isSelected
-      ? const Color(0xFFB8B9FA)
-      : isToday
-          ? const Color(0xFFE8E9FF)
-          : Colors.transparent,
-          
-  border: Border.all(
-    color: isSelected
-        ? purple
+    ? const Color(0xFFB8B9FA)
+    : isInSelectedWeek
+        ? const Color(0xFFE9E9FA)
         : isToday
-            ? navy
-            : const Color(0xFFB8B9FA),
-    width: isSelected ? 2 : isToday ? 1.5 : 0.65,
-  ), // FEDYA selected day decor is up
+            ? const Color(0xFFE8E9FF)
+            : Colors.transparent,
+
+border: Border.all(
+  color: isSelected
+      ? purple
+      : isToday
+          ? navy
+          : isInSelectedWeek
+              ? const Color(0xFFB8B9FA)
+              : const Color(0xFFB8B9FA),
+  width: isSelected ? 2 : isToday ? 1.5 : isInSelectedWeek ? 1 : 0.65,
+), // FEDYA selected day decor is up
 ),
                   padding: const EdgeInsets.all(4),
                   child: Column(
@@ -529,7 +588,12 @@ final isSelected = date.year == selectedDate.year &&
         const SizedBox(height: 16),
         ...habits.map((habit) => Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: HabitCard(habit: habit, weekdays: weekdays),
+          child: HabitCard(
+  habit: habit,
+  weekdays: weekdays,
+  selected: getHabitChecks(habit),
+  onToggle: (index) => toggleHabitDay(habit, index),
+),
         )),
       ],
     );
@@ -545,31 +609,20 @@ class Habit {
   Habit(this.name, this.icon, this.activeDays, {this.progress});
 }
 
-class HabitCard extends StatefulWidget {
+
+class HabitCard extends StatelessWidget {
   final Habit habit;
   final List<String> weekdays;
+  final List<bool> selected;
+  final void Function(int) onToggle;
 
   const HabitCard({
     super.key,
     required this.habit,
     required this.weekdays,
+    required this.selected,
+    required this.onToggle,
   });
-
-  @override
-  State<HabitCard> createState() => _HabitCardState();
-}
-
-class _HabitCardState extends State<HabitCard> {
-  late List<bool> selected;
-
-  @override
-  void initState() {
-    super.initState();
-    selected = List.generate(
-      7,
-      (index) => widget.habit.activeDays.contains(index),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -594,7 +647,7 @@ class _HabitCardState extends State<HabitCard> {
             children: [
               Expanded(
                 child: Text(
-                  widget.habit.name,
+                  habit.name,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -602,25 +655,24 @@ class _HabitCardState extends State<HabitCard> {
                   ),
                 ),
               ),
-              if (widget.habit.progress != null)
-  Text(
-    '${selected.take(7).where((day) => day).length}/5',
-    style: const TextStyle(
-      fontWeight: FontWeight.bold,
-      color: ink,
-    ),
-  ),
+              if (habit.progress != null)
+                Text(
+                  '${selected.take(7).where((day) => day).length}/5',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: ink,
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 10),
           LayoutBuilder(
             builder: (context, constraints) {
-
               return Row(
                 children: List.generate(7, (index) {
                   final active = selected[index];
-final todayIndex = DateTime.now().weekday - 1;
-final isToday = index == todayIndex;
+                  final todayIndex = DateTime.now().weekday - 1;
+                  final isToday = index == todayIndex;
 
                   return Expanded(
                     child: Padding(
@@ -630,27 +682,22 @@ final isToday = index == todayIndex;
                       child: SizedBox(
                         height: 35,
                         child: OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              selected[index] = !selected[index];
-                            });
-                          },
+                          onPressed: () => onToggle(index),
                           style: OutlinedButton.styleFrom(
                             padding: EdgeInsets.zero,
-                           backgroundColor: active
-    ? navy
-    : isToday
-        ? const Color(0xFFB8B8B8)
-        : Colors.transparent,
+                            backgroundColor: active
+                                ? navy
+                                : isToday
+                                    ? const Color(0xFFB8B8B8)
+                                    : Colors.transparent,
                             foregroundColor:
                                 active ? Colors.white : Colors.black54,
                             side: BorderSide(
                               color: isToday
-    ? const Color(0xFF888888)
-    : active
-        ? navy
-        : const Color(0xFF9999A5),
-                            
+                                  ? const Color(0xFF888888)
+                                  : active
+                                      ? navy
+                                      : const Color(0xFF9999A5),
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6),
@@ -659,7 +706,7 @@ final isToday = index == todayIndex;
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
-                              widget.weekdays[index],
+                              weekdays[index],
                               style: const TextStyle(fontSize: 15),
                             ),
                           ),
@@ -676,6 +723,7 @@ final isToday = index == todayIndex;
     );
   }
 }
+
 // empty page thing below
 class EmptyPage extends StatelessWidget {
   final String title;
